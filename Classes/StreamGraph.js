@@ -1,8 +1,14 @@
-include('underscore.js');
+/**
+ * 
+ * @class Creates a streamgraph.
+ *
+ * @author Michele Mauri
+ * @version 0.1
+ *
+ * @param {Object[]} data a collection (an array of objects)
+ */
+
 include('Utils/Link.js');
-
-
-
 
 function StreamGraph(data){
 	
@@ -24,9 +30,17 @@ function StreamGraph(data){
 	this.stepsIndex = 0;
 	this.clustersIndex = 1;
 	this.valuesIndex = 2;
+
+	//variables used in @initialize function
+	
+	var steps = {};
+	var stepsNumber = 0;
+	var groupArray = {};
+
 	
 	/*
 	 * sort the cluster inside a step
+	 * @param {Object[]} aImput an array
 	 */
 	
 
@@ -37,20 +51,14 @@ function StreamGraph(data){
 		aTemp.sort(function () {return arguments[1][1] - arguments[0][1]});
 		var aOutput = [];
 		
-		//for (var nIndex = aTemp.length-1; nIndex >=0; nIndex--)
-		//aOutput[aTemp[nIndex][0]] = aTemp[nIndex][1];
-		
-		//riscrivo la funzione in modo da non invertire l'ordine
-		
 		for (var nIndex = 0; nIndex < aTemp.length; nIndex++)
 		aOutput[aTemp[nIndex][0]] = aTemp[nIndex][1];
 	
-		
 		return aOutput;
 	}
 	
 	/*
-	 * get the scale according the visualization size
+	 * Get the scale according to the visualization size
 	 */
 	
 	this.getScale = function() {
@@ -90,12 +98,15 @@ function StreamGraph(data){
 		
 		var components = {};
 		
-		//get the option list using Underscore.js
-		var options = _.keys(data[0]);
-		//options=['uno','due','tre'];
+		//get the option list
+		var keys = [];
+		for(var i in data[0])
+		{
+			keys.push(i);
+		}
 		
 		
-		// check if variables are defined
+		// check if all the variables are defined
 		function checkValues(variableName, variable, defaultValue){
 				components[variableName] = { type:'list', label:(variableName+' column index'), options: options, value: options[defaultValue]}
 		}
@@ -109,7 +120,7 @@ function StreamGraph(data){
 		this.clustersIndex = values.clusters;
 		this.valuesIndex = values.values;
 		
-		//ora inizializzo
+		//initialize it
 		this.initialize();
 	}
 	
@@ -166,11 +177,8 @@ function StreamGraph(data){
 		
 		var components = {};
 		for(var item in this.colors) {
-			//mi sa che va convertito in rgb
-			//var hexvalue = '#'+this.colors[item].red.toString(16)+this.colors[item].green.toString(16)+this.colors[item].blue.toString(16);
 			components[item] = { type:'color', label:item, value:this.colors[item]};
 		}
-		//var components = { color: { type: 'color', label: 'Color', value:new RGBColor(0,1,0)}}; 
 		
 		var values = Dialog.prompt('Set Colors', components);
 		
@@ -257,13 +265,13 @@ function StreamGraph(data){
 		}
 	}
 	
-	//prepeare the data
-	
-	var steps = {};
-	var stepsNumber = 0;
-	var groupArray = {};
-	//var categories = {};
-	
+
+	/*
+	 *	Starting from the data, creates all the needed variables to draw the visualization.
+	 *	
+	 *
+	 */
+		
 	this.initialize = function(){
 	
 		var step = this.stepsIndex;
@@ -282,22 +290,22 @@ function StreamGraph(data){
 		
 		//sort and create a color for each category
 		
-		
-		
 		var i = 0;
 		
 		for ( k in steps ) {
-			//print('key: '+k);
-			
-			//attivo/disattivo il sorting
+
+			//sort each step elements
 			steps[k] = this.sortAssoc(steps[k]);
 			
 			for(m in steps[k]) {
 				if(this.colors[m]){
-					//print('\t '+m+" valore: "+steps[k][m]);
+					
+					// do nothing. probably is better to rewrite this function.
+
 				} else {
+
+					// create a random color for each step
 					this.colors[m] = new RGBColor(Math.random(),Math.random(),Math.random())
-					//print('\t '+i+"\t"+m+" valore: "+steps[k][m]+ "\tcolore: "+this.colors[m]);
 					groupArray[m] = new Group();
 					groupArray[m].name = m;
 					i++;

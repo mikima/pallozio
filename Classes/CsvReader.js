@@ -1,16 +1,24 @@
-//include('underscore.js');
-// questa è una versione completamente nuova.
-// l'idea è quella di creare semplicemente un parser che restituisce un oggetto.
+/**
+ * 
+ * @class Parse a text and returns a table as array of object.
+ *
+ * @author Michele Mauri
+ * @version 0.1
+ *
+ */		
 
 function CsvReader(){
-	
-	//datastring contiene il testo da parsare
+
+	// dataString contains the text to parse
 	var dataString = "";
-	//data è l'oggetto creato e restituito dalla funzione createCollection
+
+	//the object returned by function {@createCollection}
 	var data = [];
 	
+	//if the first line contains headers
 	hasHeaders = true;
 	
+	//lines and cells default charachter dividers.	
 	lineDelimiter = '\r';
 	cellDelimiter = '\t';
 	
@@ -41,7 +49,7 @@ function CsvReader(){
 		var components = { source: {type: 'list', label: 'Data Source', options: ['From File', 'From Selected Text']},
 						   lineDelimiter: {type:'string', label:'Line Delimiter'},
 						   cellDelimiter: {type:'string', label:'Cell Delimiter'},
-						   hasHeaders: {type:'boolean', label:'First Line is header'}
+						   hasHeaders: {type:'boolean', label:'Headers in first line'}
 						 }
 		
 		var values = Dialog.prompt('Set Data Variables', components, values);
@@ -50,8 +58,8 @@ function CsvReader(){
 		cellDelimiter = new RegExp(values.cellDelimiter);
 		hasHeaders = values.hasHeaders;
 			
-		// a seconda del valore di values.source (definito dall'utente)
-		// carico da file o da selezione
+		// depending on values.source
+		// the text is loaded from a selected textfield or from a file.
 		if(values.source=='From File'){
 			this.readFromFile();
 		} else {
@@ -62,8 +70,7 @@ function CsvReader(){
 	}
 	
 	this.askParsing = function(){
-		//non voglio utilizzare underscore
-		//var keys = _.keys(data[0]);
+
 		var keys = [];
 		for(var i in data[0])
 		{
@@ -73,11 +80,10 @@ function CsvReader(){
 		var components = {};
 		
 		for(var key in keys) {
-			//probably due the way scriptographer handles components, we cannot give them a
-			//name starting with a number.
-			//we will add an underscore _ to each component's name.
+
+			// we will add an underscore _ to each component's name
+			// to avoid errors when keys starts with digits.
 			components['_'+keys[key]] = { type:'boolean', label:keys[key], value:false};
-			print('comp '+keys[key]+': '+components['_'+keys[key]].label)
 		}
 		
 		var values = Dialog.prompt('Select columns containing numbers',components);
@@ -92,98 +98,47 @@ function CsvReader(){
 	}
 	
 	/*
-	 * Metodo per chiedere tramite palette tutte le variabili necessarie.
-	 * Al momento presenta un sacco di problemi, perchè non è ancora stato identificato
-	 * il modo migliore per gestire gli eventi associati alla mdoifica dei valori.
-	 * In sintesi, meglio non usarla.
-	 */
-	/*
-	this.askAll = function(){
-		
-		var values = {
-						source: 'From Selected Text',
-						lineDelimiter: '\\r',
-						cellDelimiter: '\\t',
-						hasHeaders: true
-					 };
-		
-		var components = { source: {type: 'list', label: 'Data Source', options: ['From File', 'From Selected Text']},
-						   lineDelimiter: {type:'string', label:'Line Delimiter'},
-						   cellDelimiter: {type:'string', label:'Cell Delimiter'},
-						   hasHeaders: {type:'boolean', label:'First Line is header'},
-						   update: {type:'button', value:'Update'}
-						 }
-		
-		var palette = new Palette('Data Loader', components, values);
-		
-		
-		// tutta la funzione è parecchio ritorta su se stessa, in attesa di applicaer il modello MVC
-		
-		// TODO: far tutto questo in modo sensato
-		// aggiungo tutto l'oggetto CSV come proprietà di palette.components,
-		// così ci posso accedere internamente dal onClick.
-		// tutto questo perchè non so come raccogliere gli eventi, bisognerà capirlo
-		
-		palette.components.update.myCsv = this;
-		
-		palette.components.update.onClick = function(){
-			//passo i valori della palette (values) all'oggetto csv
-			this.myCsv.lineDelimiter = new RegExp(values.lineDelimiter);
-			this.myCsv.cellDelimiter = new RegExp(values.cellDelimiter);
-			this.myCsv.hasHeaders = values.hasHeaders;
-			
-			// a seconda del valore di values.source (definito dall'utente)
-			// carico da file o da selezione
-			if(values.source=='From File'){
-				this.myCsv.readFromFile();
-			} else {
-				this.myCsv.readFromSel();
-			}
-		}
-	}
-	*/
-	
-	/*
-	 * Metodo per leggere da una selezione di testo.
-	 * La funzione crea la variabile datastring, dopodichè
-	 * chiama la funzione @creteCollection, popola l'oggetto data
-	 * e restituisce sé stesso in modo da impostare una monade (si dice impostare?)
+	 * Read data from a selected textpath or textpoint.
 	 */
 	
 	this.readFromSel = function(){
 		
-		//svuoto la datastring
-		dataString='';
+		//clear dataString
+		dataString = '';
 	
-		// controllo se c'è una selezione
-		// e se nella selezione c'è un testo
+		// check if at least a text is selected
 		if(document.selectedItems[0] == undefined || document.selectedItems[0].content == undefined) {
 		
 			Dialog.alert("no text selected");
 		
 		} else {
+
+			// take the first text in selection
 			dataString = document.selectedItems[0].content;
 		}
-		//read the data
+
+		// call createCollection function to
+		// parse the data
 		return(this.createCollection());
 	}
 	
 	/*
-	 * Metodo per leggere da un file di testo esterno.
-	 * La funzione crea la variabile datastring, dopodichè
-	 * chiama la funzione @creteCollection, popola l'oggetto data
-	 * e restituisce sé stesso in modo da impostare una monade (si dice impostare?)
+	 * Read data from external file
+	 * 
+	 * @param {string} [_path] file's path
+	 * @param {string} [_name] filename and extension
 	 */
 	
 	this.readFromFile = function(_path,_name){
 		
-		//variabile che descrive il file da aprire
+		//Filename string
 		var dataSource;
 		
-		//svuoto la datastring
-		dataString='';
+		//clear dataString
+		dataString = '';
 		
-		// se non è stato specificato il file o la path, apre una finestra di dialogo
+		// if readFromFile is called without specifying _path and _name variable,
+		// prompt a windows asking for a file.
 		
 		if (_name==null){
 			
@@ -197,55 +152,58 @@ function CsvReader(){
 		//open datasource
 		dataSource.open();
 		
-		//read all lines contained
+		//read all the contained lines
 		while(line = dataSource.readln()) {
-			// TODO: fare questo in maniera sensata
-			// siccome quando il delimiter viene inserito dall'utente javascript lo interpreta come oggetto regexp,
-			// lo devo convertire in stringa per a) unire le righe correttamente,
 			
-			lineDelimiter = lineDelimiter.toString();
-			dataString += line+lineDelimiter;
+			//add to dataString each line followed by lineDelimiter
+			dataString += line + lineDelimiter.toString();
 		}
+
 		dataString = dataString.slice(0,-lineDelimiter.length);
-		//read the data
+		
+		// call createCollection function to
+		// parse the data
 		return(this.createCollection());
 	}
 	
 	/*
-	 * Metodo per creare una collezione (Array di Oggetti) a partire da una stringa.
-	 * Restituisce l'oggetto stesso in modo da impostare una monade.
+	 * Creates a collection (objects array) starting from dataString variable.
 	 */
 	
 	this.createCollection = function() {
 	
-		//clear the data object
+		// clear the data object
 		data = [];
 		
 		var lines = dataString.split(lineDelimiter);
 		var headers = [];
 		
-		//controllo se esistono headers, altrimenti li creo
+		// load headers from first line
+		// if defined.
 		if(hasHeaders){
 		
-			//creo un array dalla prima linea
+			//create headers array
 			headers = lines[0].split(cellDelimiter);
-			//rimuovo la prima linea dai dati
+
+			//remove first line
 			lines.splice(0,1);
 			
 		} else {
-			//controllo il numero di singoli valori nella prima riga
+			// if first line doesn't contain headers,
+			// count the number of cells in the first line.
 			var numOfHeaders = lines[0].split(cellDelimiter).length;
 			
-			//popolo l'array con valore apri all'indice
+			//create progressive numeric headers
 			for(var i = 0; i < numOfHeaders; i++){
 				headers[i] = i;
 			}
 		}
 		
-		//a questo punto comincio a creare la collezione
+		//populate collection, contained in data array
+
 		for(var line = 0; line < lines.length; line++){
 			
-			//creo un oggetto con le caratteristiche volute
+			//create an object for each line
 			var newItem = {};
 			
 			var values = lines[line].split(cellDelimiter);
@@ -253,7 +211,6 @@ function CsvReader(){
 			for(var i = 0; i < values.length; i++){
 				
 				newItem[(headers[i]).toString()] = values[i];
-				//CHECK: e se nel file ci sono più valori degli headers? devo dare un alert?
 			}
 		
 			data.push(newItem);
@@ -262,9 +219,12 @@ function CsvReader(){
 	}
 	
 	/*
-	 * Metodo per convertire una proprietà condivisa da ogni oggetto della collezione
-	 * da String a Float.
-	 * Restituisce l'oggetto stesso in modo da impostare una monade.
+	 * convert a column from string to float.
+	 * as table is represented by an array of objects,
+	 * and columns as objects' properties,
+	 * for each object is converted a selected property.
+	 *
+	 * @param {String} _propName Name (header) of the property to parse.
 	 */
 	
 	this.parseProperty = function(_propName){
@@ -279,8 +239,7 @@ function CsvReader(){
 	}
 	
 	/*
-	 * Metodo per ottenere la collezione (Array di Oggetti) 
-	 * creata dalla funzione createCollection a partire dalla datastring.
+	 * Get parsed data
 	 */
 	 
 	this.getData = function(){

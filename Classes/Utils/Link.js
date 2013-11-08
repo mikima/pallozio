@@ -1,25 +1,25 @@
 /**
  * 
  * Creates a new Link.
- * @class The class Link creates a visual link between two objects.
+ * @class The Link class creates a visual link between two objects.
  * It supports different render methods, using both lines and paths.
  * 
- * @version 0.1
+ * @author Michele Mauri
+ * @version 0.1.1
+ *
  * @property {Path} r1 The starting path of the stream.
  * @property {Path} r2 The ending point of the stream.
- * @property {String} render if provided, The Link render method. It can be choose between "line", "path", "stream", "lineStream"</ br>
+ * @property {String} [render] if provided, The Link render method. It can be choose between "line", "path", "stream", "lineStream"</ br>
  * <b>"line"</b> render the link with a single line, the height is equal to the lowest one between the two elements</ br>
  * <b>"path"</b> render the link as a path, using 4 control points.</ br>
  * <b>"stream"</b> render the link as a path, the heights are proportional to the two objects</ br>
  * <b>"lineStream"</b> render the link as a gropu of lines, this way the heigths are proportional to the two object's ones.</ br>
  * If not provided, the link will be rendered as "line".
- * @property {Number} ease if provided, the handlers horizontal distance from the point.
+ * @property {Number} [ease] if provided, the handlers horizontal distance from the point.
  */
 
 function Link(r1,r2,render,ease){
 	
-	this.version = "0.1";
-	// check functions
 	this.sprite = new Path();
 	this.render = render==null ? 'line' : render;
 	this.ease = ease==null ? 'auto' : ease;
@@ -28,9 +28,10 @@ function Link(r1,r2,render,ease){
 	var r,l;
 	var h, rh, lh;
 	
-	//get minimum height
+	// get minimum height
 	h = Math.min(r1.bounds.height,r2.bounds.height);
-	//get object on the left
+	
+	// identify objects positions
 	if (r1.bounds.x > r2.bounds.x) {
 		r = r1;
 		l = r2;
@@ -39,15 +40,7 @@ function Link(r1,r2,render,ease){
 		r = r2;
 	}
 
-	
-	/**
-	 * drawing method. if 'line' the link will be plotted as a two-point bezier.
-	 * if 'path' as a 4-points path. default = line
-	 */
-	//this.render = 'stream';
-	
-	//this.ease = 'auto';
-	
+	// if ease is set to 'auto', handelrs will be put in the middle.
 	if(this.ease = 'auto'){
 		this.ease = (r.bounds.x - (l.bounds.x+l.bounds.width))/2;
 	}
@@ -63,7 +56,7 @@ function Link(r1,r2,render,ease){
 	}
 	
 	/**
-	 * render the link, according to the render method declared.
+	 * render the link, according the choosen render method.
 	 */
 	
 	this.draw = function() {
@@ -167,7 +160,7 @@ function Link(r1,r2,render,ease){
 			
 			this.sprite.appendTop(p);
 			
-			//calculate lines to fill
+			//calculate lines number.
 			var max = r.bounds.height>l.bounds.height ? r : l;
 			var min = r.bounds.height<l.bounds.height ? r : l;
 			
@@ -185,5 +178,7 @@ function Link(r1,r2,render,ease){
 			
 		}
 	}
+
+	//draw the link
 	this.draw();
 }

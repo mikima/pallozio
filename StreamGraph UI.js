@@ -1,5 +1,5 @@
-include('../Classes/CsvReader.js');
-include('../Classes/StreamGraph.js');
+include('Classes/CsvReader.js');
+include('Classes/StreamGraph.js');
 
 
 var data = new CsvReader().askProperties().askParsing().getData();
