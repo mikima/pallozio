@@ -99,10 +99,10 @@ function StreamGraph(data){
 		var components = {};
 		
 		//get the option list
-		var keys = [];
+		var options = [];
 		for(var i in data[0])
 		{
-			keys.push(i);
+			options.push(i);
 		}
 		
 		
