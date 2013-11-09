@@ -213,7 +213,8 @@ function StreamGraph(data){
 		//draw all rectangles
 		
 		for ( k in steps ) {
-			//calcolo la dimensione dello step
+
+			//computes the total size of steps
 			var totSize = -yd;
 			for(m in steps[k]){
 				totSize+=steps[k][m]*scale+yd;
@@ -238,13 +239,12 @@ function StreamGraph(data){
 					groupArray[m].appendTop(streams[m][streams[m].length-1]);
 				}
 				streams[m][streams[m].length-1].fillColor = this.colors[m];
-				//prendo il rettangolo di riferimento
+				
 				var rett = streams[m][streams[m].length-1];
 				var textItem = new PointText(new Point(rett.bounds.x, rett.bounds.y+rett.bounds.height/2));
 				textItem.content = m;
 				textItem.paragraphStyle.justification = 'right';
-				//print("coloro "+m+" in "+k+" di: "+this.colors[m]);
-				//Path.Rectangle(x,y,l,steps[k][m]/scale);
+
 				y += steps[k][m]*scale + yd;
 			}
 			x += xd+l;
@@ -269,7 +269,6 @@ function StreamGraph(data){
 	/*
 	 *	Starting from the data, creates all the needed variables to draw the visualization.
 	 *	
-	 *
 	 */
 		
 	this.initialize = function(){
@@ -298,11 +297,7 @@ function StreamGraph(data){
 			steps[k] = this.sortAssoc(steps[k]);
 			
 			for(m in steps[k]) {
-				if(this.colors[m]){
-					
-					// do nothing. probably is better to rewrite this function.
-
-				} else {
+				if(!this.colors[m]){
 
 					// create a random color for each step
 					this.colors[m] = new RGBColor(Math.random(),Math.random(),Math.random())
