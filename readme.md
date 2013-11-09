@@ -1,1 +1,2 @@
-readme
+**Pallozio** is a collection of scripts to ease data visualization using [Scriptographer](http://scriptographer.org/).
+It has been created by [DensityDesign Lab](http://www.densitydesign.org/) and used to produce static graphics.
