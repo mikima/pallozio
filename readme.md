@@ -10,8 +10,8 @@ Some scripts have a UI to interact with, but most of them are intended to be imp
 ## How to install
 
 Download the [master .zip file](https://github.com/mikima/pallozio/archive/master.zip), unzip it in your "Scriptographer Scripts" folder.
+
 On OSX usually is in "/Users/{yourname}/Documents/Scriptographer Scripts".
-On Windows, i don't know.
 
 
 
