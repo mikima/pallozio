@@ -5,4 +5,4 @@ Scripts were created for specific tasks, and then generalized. The code is neith
 
 Some scripts have a UI to interact with, but most of them are intended to be imported in your code to simplify some operation - like reading and parsing data, create color scales, create patterns, and so on.
 
-**Scriptographer** is no logner supported, and you'd need an outdated Adobe Illustrator version to use it, but some of the scripts are still useful.
+**Scriptographer** is no longer supported, and you need an outdated Adobe Illustrator version to use it, but some of the scripts are still useful.
