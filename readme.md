@@ -9,9 +9,13 @@ Some scripts have a UI to interact with, but most of them are intended to be imp
 
 For this reason we are now working on a new tool, **Raw**: http://raw.densitydesign.org/.
 
-Meanwhile, i will upload here all the scripts that generates visual models not yet implemented in Raw.
+Meanwhile, i will upload here all the scripts that generates visual models not yet implemented in **Raw**.
 
 ## How to install
+
+First, install Scriptographer:
+
+http://scriptographer.org/tutorials/getting-started/installation-instructions/
 
 Download the [master .zip file](https://github.com/mikima/pallozio/archive/master.zip), unzip it in your "Scriptographer Scripts" folder.
 
@@ -42,7 +46,7 @@ You can save pattern as graphic styles, and use them in your workflow.
 
 Below, a short tutorial:
 
-[![ScreenShot](https://secure-b.vimeocdn.com/ts/454/764/454764876_640.jpg)](https://vimeo.com/79151461)
+[![ScreenShot](https://secure-b.vimeocdn.com/ts/454/768/454768270_640.jpg)](https://vimeo.com/79154239)
 
 
 
