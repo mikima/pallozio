@@ -14,8 +14,8 @@ Meanwhile, i will upload here all the scripts that generates visual models not y
 ## How to install
 
 First, install Scriptographer:
-
 http://scriptographer.org/tutorials/getting-started/installation-instructions/
+
 
 Download the [master .zip file](https://github.com/mikima/pallozio/archive/master.zip), unzip it in your "Scriptographer Scripts" folder.
 
