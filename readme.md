@@ -31,7 +31,7 @@ the second defining flows, the third defining the flows size.
 
 firts dataset line must contain columns headers.
 
-Here, a short tutorial:
+Below, a short tutorial:
 
 [![ScreenShot](https://secure-b.vimeocdn.com/ts/454/764/454764876_640.jpg)](https://vimeo.com/79151461)
 
@@ -41,6 +41,8 @@ This script allows you to create patterns according to values.
 You can save pattern as graphic styles, and use them in your workflow.
 
 Below, a short tutorial:
+
+[![ScreenShot](https://secure-b.vimeocdn.com/ts/454/764/454764876_640.jpg)](https://vimeo.com/79151461)
 
 
 
