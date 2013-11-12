@@ -1,4 +1,4 @@
-**Pallozio** is a collection data visualization scripts for [Scriptographer](http://scriptographer.org/).
+**Pallozio** is a collection of data visualization scripts for [Scriptographer](http://scriptographer.org/).
 It has been created for [DensityDesign Lab](http://www.densitydesign.org/) and used to produce static graphics during the last three years.
 
 Scripts were created for specific tasks, and then generalized. The code is neither clean nor well written - but hey, it works (most of the time).
