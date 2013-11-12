@@ -7,7 +7,7 @@ Some scripts have a UI to interact with, but most of them are intended to be imp
 
 **Scriptographer** is no longer supported, and you need an outdated Adobe Illustrator version to use it, but some of the scripts are still useful.
 
-For this reason we are now working on a new tool, **Raw**: http://raw.densitydesign.org/.
+At DensityDesign we are now working on a new tool, **Raw**: http://raw.densitydesign.org/.
 
 Meanwhile, i will upload here all the scripts that generates visual models not yet implemented in **Raw**.
 
