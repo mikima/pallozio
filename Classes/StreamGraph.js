@@ -30,6 +30,7 @@ function StreamGraph(data){
 	this.stepsIndex = 0;
 	this.clustersIndex = 1;
 	this.valuesIndex = 2;
+	this.rankIndex = 3;
 
 	//variables used in @initialize function
 	
@@ -58,6 +59,27 @@ function StreamGraph(data){
 	}
 	
 	/*
+	 * sort the cluster inside a step according to a value
+	 * @param {Object[]} aImput an array
+	 */
+	
+
+	this.sortOn = function(aInput, variable) {
+		var aTemp = [];
+		for (var sKey in aInput)
+		{
+			aTemp.push([sKey, aInput[sKey]]);
+		}
+		aTemp.sort(function (a,b) {return b.rank-a.rank});
+		var aOutput = [];
+		
+		for (var nIndex = 0; nIndex < aTemp.length; nIndex++)
+		aOutput[aTemp[nIndex][0]] = aTemp[nIndex][1];
+	
+		return aOutput;
+	}
+	
+	/*
 	 * Get the scale according to the visualization size
 	 */
 	
@@ -67,7 +89,7 @@ function StreamGraph(data){
 			tempVals[k] = {size:0, groups:0};
 			
 			for(var m in steps[k]){
-				tempVals[k].size += parseFloat(steps[k][m]);
+				tempVals[k].size += parseFloat(steps[k][m].value);
 				tempVals[k].groups++
 			}
 		}
@@ -114,6 +136,7 @@ function StreamGraph(data){
 		checkValues('steps', this.stepsIndex, 0);
 		checkValues('clusters', this.clustersIndex, 1);
 		checkValues('values', this.valuesIndex, 2);
+		checkValues('rank', this.rankIndex, 2);
 		
 		var values = Dialog.prompt('Map table', components);
 		this.stepsIndex = values.steps;
@@ -217,7 +240,7 @@ function StreamGraph(data){
 			//computes the total size of steps
 			var totSize = -yd;
 			for(m in steps[k]){
-				totSize+=steps[k][m]*scale+yd;
+				totSize+=steps[k][m].value*scale+yd;
 			}
 			y -= totSize/2;
 	
@@ -231,11 +254,11 @@ function StreamGraph(data){
 			
 			for(m in steps[k]) {
 				if (streams[m]){
-					streams[m].push(Path.Rectangle(x,y,l,steps[k][m]*scale));
+					streams[m].push(Path.Rectangle(x,y,l,steps[k][m].value*scale));
 					groupArray[m].appendTop(streams[m][streams[m].length-1]);
 				} else {
 					streams[m] = new Array();
-					streams[m].push(Path.Rectangle(x,y,l,steps[k][m]*scale));
+					streams[m].push(Path.Rectangle(x,y,l,steps[k][m].value*scale));
 					groupArray[m].appendTop(streams[m][streams[m].length-1]);
 				}
 				streams[m][streams[m].length-1].fillColor = this.colors[m];
@@ -245,7 +268,7 @@ function StreamGraph(data){
 				textItem.content = m;
 				textItem.paragraphStyle.justification = 'right';
 
-				y += steps[k][m]*scale + yd;
+				y += steps[k][m].value*scale + yd;
 			}
 			x += xd+l;
 			y = this.y + this.height/2;
@@ -276,6 +299,7 @@ function StreamGraph(data){
 		var step = this.stepsIndex;
 		var path = this.clustersIndex;
 		var value = this.valuesIndex;
+		var rank = this.rankIndex;
 		
 		//creates the step/categories map
 		
@@ -284,7 +308,10 @@ function StreamGraph(data){
 				steps[this.data[i][step]] = new Array();
 				stepsNumber++;
 			}
-			steps[this.data[i][step]][this.data[i][path]] = parseFloat(this.data[i][value]);
+			//create an empty object
+			steps[this.data[i][step]][this.data[i][path]] = {};
+			steps[this.data[i][step]][this.data[i][path]].value = parseFloat(this.data[i][value]);
+			steps[this.data[i][step]][this.data[i][path]].rank = parseFloat(this.data[i][rank]);
 		}
 		
 		//sort and create a color for each category
