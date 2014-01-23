@@ -36,7 +36,7 @@ function StreamGraph(data){
 	this.clustersIndex = 1;
 	this.valuesIndex = 2;
 	this.rankIndex = 3;
-	this.rankSpacing = 4;
+	this.spaceIndex = 4;
 
 	//variables used in @initialize function
 	
@@ -160,7 +160,7 @@ function StreamGraph(data){
 		checkValues('clusters', this.clustersIndex, 1);
 		checkValues('values', this.valuesIndex, 2);
 		checkValues('rank', this.rankIndex, 3, true);
-		//checkValues('spacing', this.rankSpacing, undefined, true);
+		//checkValues('spacing', this.spaceIndex, undefined, true);
 		
 		var values = Dialog.prompt('Map table', components);
 		this.stepsIndex = values.steps;
