@@ -27,6 +27,7 @@ function StreamGraph(data){
 	this.barPadding = 5;
 	this.barDistance = 80;
 	this.scale = 1;
+	this.hscale = 1;
 	this.colors = {};
 	this.linkType = 'stream';
 	this.valign = 'center';
@@ -151,7 +152,6 @@ function StreamGraph(data){
 				if(optional)
 				{
 					components[variableName].enabled =  false;
-					components[variableName].value = 'lamerda';
 					components[variableName+"check"] = { type: 'checkbox', label: 'Enable ' + variableName, onChange: function(value) {components[variableName].enabled = value}};
 				}
 		}
@@ -216,6 +216,9 @@ function StreamGraph(data){
 		
 		this.scale = this.getScale();
 		this.barDistance = this.getDistances();
+		
+		// horizontal scale. note that if the width is less than the space needed by all the bars, 
+		// bars width will be set to 0.
 		
 	}
 	
