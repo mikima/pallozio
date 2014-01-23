@@ -3,7 +3,11 @@
  * @class Creates a streamgraph.
  *
  * @author Michele Mauri
- * @version 0.1
+ * @version 0.2
+ * 
+ * v 0.2
+ * - added the vertical alignment option
+ * - rewrote the sorting function for objects, now it supports ranking
  *
  * @param {Object[]} data a collection (an array of objects)
  */
@@ -17,20 +21,22 @@ function StreamGraph(data){
 
 	this.x = 0;
 	this.y = 0;
-	this.width = 600;
-	this.height = 200;
+	this.width = 1000;
+	this.height = 500;
 	this.barWidth = 10;
 	this.barPadding = 5;
 	this.barDistance = 80;
 	this.scale = 1;
 	this.colors = {};
 	this.linkType = 'stream';
+	this.valign = 'center';
 	
 	//default indexes for values, see @askMapping or @mapping
 	this.stepsIndex = 0;
 	this.clustersIndex = 1;
 	this.valuesIndex = 2;
 	this.rankIndex = 3;
+	this.rankSpacing = 4;
 
 	//variables used in @initialize function
 	
@@ -64,17 +70,26 @@ function StreamGraph(data){
 	 */
 	
 
-	this.sortOn = function(aInput, variable) {
+	this.sortOn = function(aInput, rankValue, inverse) {
 		var aTemp = [];
 		for (var sKey in aInput)
 		{
-			aTemp.push([sKey, aInput[sKey]]);
+			aTemp.push({name: sKey, obj: aInput[sKey]});
 		}
-		aTemp.sort(function (a,b) {return b.rank-a.rank});
+		if(inverse == true)
+		{
+			aTemp.sort(function (a,b) {return b.obj[rankValue] - a.obj[rankValue]});
+		}
+		else
+		{
+			aTemp.sort(function (a,b) {return a.obj[rankValue] - b.obj[rankValue]});
+		}
 		var aOutput = [];
 		
-		for (var nIndex = 0; nIndex < aTemp.length; nIndex++)
-		aOutput[aTemp[nIndex][0]] = aTemp[nIndex][1];
+		for (var i in aTemp)
+		{
+			aOutput[aTemp[i].name] = aTemp[i].obj;
+		}
 	
 		return aOutput;
 	}
@@ -129,20 +144,30 @@ function StreamGraph(data){
 		
 		
 		// check if all the variables are defined
-		function checkValues(variableName, variable, defaultValue){
-				components[variableName] = { type:'list', label:(variableName+' column index'), options: options, value: options[defaultValue]}
+		function checkValues(variableName, variable, defaultValue, optional)
+		{
+				components[variableName] = { type:'list', label:(variableName+' column index'), options: options, value: options[defaultValue]};
+
+				if(optional)
+				{
+					components[variableName].enabled =  false;
+					components[variableName].value = 'lamerda';
+					components[variableName+"check"] = { type: 'checkbox', label: 'Enable ' + variableName, onChange: function(value) {components[variableName].enabled = value}};
+				}
 		}
 		
 		checkValues('steps', this.stepsIndex, 0);
 		checkValues('clusters', this.clustersIndex, 1);
 		checkValues('values', this.valuesIndex, 2);
-		checkValues('rank', this.rankIndex, 2);
+		checkValues('rank', this.rankIndex, 3, true);
+		//checkValues('spacing', this.rankSpacing, undefined, true);
 		
 		var values = Dialog.prompt('Map table', components);
 		this.stepsIndex = values.steps;
 		this.clustersIndex = values.clusters;
 		this.valuesIndex = values.values;
-		
+		this.rankIndex = values.rank;
+		this.spaceIndex = values.spacing;
 		//initialize it
 		this.initialize();
 	}
@@ -176,6 +201,7 @@ function StreamGraph(data){
 		components.barPadding = { type:'number', label:'Bars vertical padding', value:this.barPadding};
 		components.barWidth = { type:'number', label:'Bars width', value:this.barWidth};
 		components.linkType = { type:'list', label:'Streams Render Method', options:["line", "path", "stream", "lineStream"], value:this.linkType}
+		components.valign = {type:'list', label:'Vertical alignment', options:['top', 'center', 'bottom'], value:this.valign}
 		
 		var values = Dialog.prompt('Set Sizes', components);
 		
@@ -186,6 +212,7 @@ function StreamGraph(data){
 		this.barPadding = values.barPadding;
 		this.barWidth = values.barWidth;
 		this.linkType = values.linkType;
+		this.valign = values.valign;
 		
 		this.scale = this.getScale();
 		this.barDistance = this.getDistances();
@@ -242,7 +269,19 @@ function StreamGraph(data){
 			for(m in steps[k]){
 				totSize+=steps[k][m].value*scale+yd;
 			}
+			
+			if(this.valign == 'center')
+			{
 			y -= totSize/2;
+			}
+			else if (this.valign == 'bottom')
+			{
+			y = this.height - totSize;
+			}
+			else if (this.valign == 'top')
+			{
+			y = 0;
+			}
 	
 			var stepName = new PointText(new Point(x+l/2,y-yd*2));
 			stepName.content = k;
@@ -278,7 +317,9 @@ function StreamGraph(data){
 		
 		for ( s in streams) {
 			for(var i=1;i<streams[s].length;i++){
-				if((streams[s][i].bounds.x - streams[s][i-1].bounds.x - xd/2) <= xd){
+				//1.1 is ugly but sometimes the distance is for unknown reason slightly bigger than the variable.
+				//maybe it is due to accuracy level of illustrator drawing. maaybe we fix it with toFixed() function
+				if((streams[s][i].bounds.x - streams[s][i-1].bounds.x- l*1.1) <= xd){
 					var link = new Link(streams[s][i-1],streams[s][i],this.linkType);
 					groupArray[s].appendTop(link.sprite);
 					link.sprite.opacity = 0.5;
@@ -299,12 +340,14 @@ function StreamGraph(data){
 		var step = this.stepsIndex;
 		var path = this.clustersIndex;
 		var value = this.valuesIndex;
-		var rank = this.rankIndex;
+		var rank = this.valuesIndex;
 		
 		//creates the step/categories map
 		
-		for(var i in this.data){
-			if (!steps[this.data[i][step]]){
+		for(var i in this.data)
+		{
+			if (!steps[this.data[i][step]])
+			{
 				steps[this.data[i][step]] = new Array();
 				stepsNumber++;
 			}
@@ -321,7 +364,15 @@ function StreamGraph(data){
 		for ( k in steps ) {
 
 			//sort each step elements
-			steps[k] = this.sortAssoc(steps[k]);
+			
+			if(rank != value)
+			{
+				steps[k] = this.sortOn(steps[k],'rank', false);
+			}
+			else
+			{
+				steps[k] = this.sortOn(steps[k],'value', true);
+			}
 			
 			for(m in steps[k]) {
 				if(!this.colors[m]){
