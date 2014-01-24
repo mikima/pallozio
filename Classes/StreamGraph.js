@@ -26,6 +26,7 @@ function StreamGraph(data){
 	this.barWidth = 10;
 	this.barPadding = 5;
 	this.proportional = false;
+	this.ranked = false;
 	this.barDistance = 80;
 	this.scale = 1;
 	this.hscale = 1;
@@ -174,9 +175,10 @@ function StreamGraph(data){
 		this.rankIndex = values.rank;
 		this.spaceIndex = values.space;
 		this.proportional = values.space_check;
+		this.ranked = values.rank_check;
 		
 		//print spacing
-		print('proportional? '+this.proportional);
+		print('ranked? '+this.ranked);
 		
 		//initialize it
 		this.initialize();
@@ -427,7 +429,7 @@ function StreamGraph(data){
 
 			//sort each step elements
 			
-			if(rank != value)
+			if(this.ranked == true)
 			{
 				steps[k] = this.sortOn(steps[k],'rank', false);
 			}
