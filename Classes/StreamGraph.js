@@ -177,9 +177,6 @@ function StreamGraph(data){
 		this.proportional = values.space_check;
 		this.ranked = values.rank_check;
 		
-		//print spacing
-		print('ranked? '+this.ranked);
-		
 		//initialize it
 		this.initialize();
 	}
