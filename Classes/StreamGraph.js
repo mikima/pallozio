@@ -334,8 +334,6 @@ function StreamGraph(data){
 			stepName.characterStyle.fontSize = 16;
 			stepName.characterStyle.font = app.fonts['Myriad Pro']['bold'];
 			
-			//var i = 0; //probably not used
-			
 			for(m in steps[k]) {
 				
 				//
