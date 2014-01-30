@@ -25,8 +25,11 @@ function StreamGraph(data){
 	this.height = 500;
 	this.barWidth = 10;
 	this.barPadding = 5;
+	this.proportional = false;
+	this.ranked = false;
 	this.barDistance = 80;
 	this.scale = 1;
+	this.hscale = 1;
 	this.colors = {};
 	this.linkType = 'stream';
 	this.valign = 'center';
@@ -41,9 +44,13 @@ function StreamGraph(data){
 	//variables used in @initialize function
 	
 	var steps = {};
+	var stepPositions = {};
 	var stepsNumber = 0;
 	var groupArray = {};
-
+	
+	//variable used for horizontal scaling
+	var minDist = Infinity;
+	var maxDist = -Infinity;
 	
 	/*
 	 * sort the cluster inside a step
@@ -151,8 +158,7 @@ function StreamGraph(data){
 				if(optional)
 				{
 					components[variableName].enabled =  false;
-					components[variableName].value = 'lamerda';
-					components[variableName+"check"] = { type: 'checkbox', label: 'Enable ' + variableName, onChange: function(value) {components[variableName].enabled = value}};
+					components[variableName+"_check"] = { type: 'checkbox', label: 'Enable ' + variableName, onChange: function(value) {components[variableName].enabled = value; this.proportional = value}};
 				}
 		}
 		
@@ -160,14 +166,17 @@ function StreamGraph(data){
 		checkValues('clusters', this.clustersIndex, 1);
 		checkValues('values', this.valuesIndex, 2);
 		checkValues('rank', this.rankIndex, 3, true);
-		//checkValues('spacing', this.spaceIndex, undefined, true);
+		checkValues('space', this.spaceIndex, 4, true);
 		
 		var values = Dialog.prompt('Map table', components);
 		this.stepsIndex = values.steps;
 		this.clustersIndex = values.clusters;
 		this.valuesIndex = values.values;
 		this.rankIndex = values.rank;
-		this.spaceIndex = values.spacing;
+		this.spaceIndex = values.space;
+		this.proportional = values.space_check;
+		this.ranked = values.rank_check;
+		
 		//initialize it
 		this.initialize();
 	}
@@ -217,6 +226,39 @@ function StreamGraph(data){
 		this.scale = this.getScale();
 		this.barDistance = this.getDistances();
 		
+		// horizontal scale. note that if the width is less than the space needed by all the bars, 
+		// bars width will be set to 0.
+		if(stepsNumber * this.barWidth > this.width)
+		{
+			this.barWidth = 0;
+			Dialog.prompt('Warning', 'Visualization width is too small to contain all bars. Bars width will be set to 0');
+		}
+		
+		//if user set a variable for distance, we compute the horizontal scale
+		if (this.proportional == true)
+		{
+			// ok we can calculate
+			// since the 'horizontal spacing' variable is meant to be incremental
+			// (describing the distance from the origin and not from the previous step)
+			// the total space is the visualization width minus last bar.
+			var flowsSpace = this.width - this.barWidth;
+			
+			//get the maximum and minimum value
+			for(var i in data)
+			{
+				data[i][this.spaceIndex] = parseFloat(data[i][this.spaceIndex]);
+				if(data[i][this.spaceIndex] > maxDist)
+				{
+					maxDist = data[i][this.spaceIndex];
+				}
+				if(data[i][this.spaceIndex] < minDist)
+				{
+					minDist = data[i][this.spaceIndex];
+				}
+			}
+			//get scale
+			this.hscale = flowsSpace / (maxDist - minDist);
+		}
 	}
 	
 	/*
@@ -260,10 +302,13 @@ function StreamGraph(data){
 		var scale = this.scale;
 		var streams = {};
 		
+		//ranking
+		var steprank = 0;
 		//draw all rectangles
-		
 		for ( k in steps ) {
 
+			//not a nice solution.
+			steprank ++;
 			//computes the total size of steps
 			var totSize = -yd;
 			for(m in steps[k]){
@@ -272,15 +317,15 @@ function StreamGraph(data){
 			
 			if(this.valign == 'center')
 			{
-			y -= totSize/2;
+				y -= totSize/2;
 			}
 			else if (this.valign == 'bottom')
 			{
-			y = this.height - totSize;
+				y = this.height - totSize;
 			}
 			else if (this.valign == 'top')
 			{
-			y = 0;
+				y = 0;
 			}
 	
 			var stepName = new PointText(new Point(x+l/2,y-yd*2));
@@ -289,9 +334,14 @@ function StreamGraph(data){
 			stepName.characterStyle.fontSize = 16;
 			stepName.characterStyle.font = app.fonts['Myriad Pro']['bold'];
 			
-			var i = 0;
-			
 			for(m in steps[k]) {
+				
+				//
+				if(this.proportional == true)
+				{
+					x = (stepPositions[k] - minDist) * this.hscale;
+				}
+			
 				if (streams[m]){
 					streams[m].push(Path.Rectangle(x,y,l,steps[k][m].value*scale));
 					groupArray[m].appendTop(streams[m][streams[m].length-1]);
@@ -301,6 +351,7 @@ function StreamGraph(data){
 					groupArray[m].appendTop(streams[m][streams[m].length-1]);
 				}
 				streams[m][streams[m].length-1].fillColor = this.colors[m];
+				streams[m][streams[m].length-1].steprank = steprank;
 				
 				var rett = streams[m][streams[m].length-1];
 				var textItem = new PointText(new Point(rett.bounds.x, rett.bounds.y+rett.bounds.height/2));
@@ -309,7 +360,10 @@ function StreamGraph(data){
 
 				y += steps[k][m].value*scale + yd;
 			}
-			x += xd+l;
+			if(this.proportional == false)
+			{
+				x += xd+l;
+			}
 			y = this.y + this.height/2;
 		}
 		
@@ -317,9 +371,12 @@ function StreamGraph(data){
 		
 		for ( s in streams) {
 			for(var i=1;i<streams[s].length;i++){
-				//1.1 is ugly but sometimes the distance is for unknown reason slightly bigger than the variable.
-				//maybe it is due to accuracy level of illustrator drawing. maaybe we fix it with toFixed() function
-				if((streams[s][i].bounds.x - streams[s][i-1].bounds.x- l*1.1) <= xd){
+				//each rectangle has its own 'steprank' variable.
+				//the variable define the step each rectangle belongs to.
+				//it is cremental, so we can check if two rectangles are consequential
+				//and draw a link between them
+				if(streams[s][i].steprank - streams[s][i-1].steprank == 1)
+				{
 					var link = new Link(streams[s][i-1],streams[s][i],this.linkType);
 					groupArray[s].appendTop(link.sprite);
 					link.sprite.opacity = 0.5;
@@ -340,7 +397,8 @@ function StreamGraph(data){
 		var step = this.stepsIndex;
 		var path = this.clustersIndex;
 		var value = this.valuesIndex;
-		var rank = this.valuesIndex;
+		var rank = this.rankIndex;
+		var space = this.spaceIndex;
 		
 		//creates the step/categories map
 		
@@ -348,6 +406,7 @@ function StreamGraph(data){
 		{
 			if (!steps[this.data[i][step]])
 			{
+				stepPositions[this.data[i][step]] = parseFloat(this.data[i][space]);
 				steps[this.data[i][step]] = new Array();
 				stepsNumber++;
 			}
@@ -365,7 +424,7 @@ function StreamGraph(data){
 
 			//sort each step elements
 			
-			if(rank != value)
+			if(this.ranked == true)
 			{
 				steps[k] = this.sortOn(steps[k],'rank', false);
 			}
