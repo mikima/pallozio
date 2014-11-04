@@ -180,35 +180,77 @@ function Link(r1,r2,render,ease){
 		}
 		if(this.render == 'tube')
 			{
-				var length = Math.abs(l.bounds.x - r.bounds.x);
-				var height = Math.abs(l.bounds.y - r.bounds.y);
-				//plus 1 or minus 1 depending on the vertical direction
-				var vdir = (l.bounds.y - r.bounds.y) / height;
+				var length = Math.abs(l.bounds.center.x - r.bounds.center.x);
+				var height = Math.abs(l.bounds.center.y - r.bounds.center.y);
+				if(height != 0 && length != 0)
+				{
+					//plus 1 or minus 1 depending on the vertical direction
+					var vdir = (l.bounds.y - r.bounds.y) / height;
+					
+					var radius = height < length ? height / 2 : length / 2;
 				
-				var radius = height < length ? height / 2 : length / 2;
+					var x1 = l.bounds.center.x;
+					var y1 = l.bounds.center.y;
+					var x2 = r.bounds.center.x - radius * 2;
+					var y2 = y1;
+					var x3 = r.bounds.center.x - radius;
+					var y3 = l.bounds.center.y - radius * vdir;
+					var x4 = x3;
+					var y4 = r.bounds.center.y + radius * vdir;
+					var x5 = r.bounds.center.x;
+					var y5 = r.bounds.center.y;
 				
-				var x1 = l.bounds.center.x;
-				var y1 = l.bounds.center.y;
-				var x2 = r.bounds.center.x - radius * 2;
-				var y2 = y1;
-				var x3 = r.bounds.center.x - radius;
-				var y3 = l.bounds.center.y - radius * vdir;
-				var x4 = x3;
-				var y4 = r.bounds.center.y + radius * vdir;
-				var x5 = r.bounds.center.x;
-				var y5 = r.bounds.center.y;
+					var ax = Math.cos(Math.PI/4) * radius;
+					var ay = Math.sin(Math.PI/4) * radius;
 				
-				var ax = Math.cos(Math.PI/4) * radius;
-				var ay = Math.sin(Math.PI/4) * radius;
+					this.sprite.moveTo(x1, y1);
+					this.sprite.lineTo(x2, y2);
+					this.sprite.arcTo(x2+ax, y3+ay, x3, y3);
+					this.sprite.lineTo(x4, y4);
+					this.sprite.arcTo(x5-ax*vdir, y4-ay*vdir, x5, y5);
+				}
+				else
+				{
+					this.sprite.moveTo(l.position);
+					this.sprite.lineTo(r.position);
+				}
+			}
+			if(this.render == 'tube-corners')
+			{
+				var length = Math.abs(l.bounds.rightCenter.x - r.bounds.leftCenter.x);
+				var height = Math.abs(l.bounds.rightCenter.y - r.bounds.leftCenter.y);
+				if(height != 0 && length != 0)
+				{
+					//plus 1 or minus 1 depending on the vertical direction
+					var vdir = (l.bounds.rightCenter.y - r.bounds.leftCenter.y) / height;
+					
+					var radius = height < length ? height / 2 : length / 2;
 				
-				var p = new Path();
-				p.moveTo(x1, y1);
-				p.lineTo(x2, y2);
-				p.arcTo(x2+ax, y3+ay, x3, y3);
-				p.lineTo(x4, y4);
-				p.arcTo(x5-ax*vdir, y4-ay*vdir, x5, y5);
+					var x1 = l.bounds.rightCenter.x;
+					var y1 = l.bounds.rightCenter.y;
+					var x2 = r.bounds.leftCenter.x - radius * 2;
+					var y2 = y1;
+					var x3 = r.bounds.leftCenter.x - radius;
+					var y3 = l.bounds.rightCenter.y - radius * vdir;
+					var x4 = x3;
+					var y4 = r.bounds.leftCenter.y + radius * vdir;
+					var x5 = r.bounds.leftCenter.x;
+					var y5 = r.bounds.leftCenter.y;
 				
-				this.sprite.appendTop(p);
+					var ax = Math.cos(Math.PI/4) * radius;
+					var ay = Math.sin(Math.PI/4) * radius;
+				
+					this.sprite.moveTo(x1, y1);
+					this.sprite.lineTo(x2, y2);
+					this.sprite.arcTo(x2+ax, y3+ay, x3, y3);
+					this.sprite.lineTo(x4, y4);
+					this.sprite.arcTo(x5-ax*vdir, y4-ay*vdir, x5, y5);
+				}
+				else
+				{
+					this.sprite.moveTo(l.bounds.rightCenter);
+					this.sprite.lineTo(r.bounds.leftCenter);
+				}
 			}
 	}
 
